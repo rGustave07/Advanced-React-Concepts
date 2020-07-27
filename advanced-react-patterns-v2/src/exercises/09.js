@@ -4,7 +4,7 @@ import React from 'react'
 import {Switch} from '../switch'
 
 const callAll = (...fns) => (...args) =>
-  fns.forEach(fn => fn && fn(...args))
+  fns.forEach((fn) => fn && fn(...args))
 
 class Toggle extends React.Component {
   static defaultProps = {
@@ -15,7 +15,7 @@ class Toggle extends React.Component {
   initialState = {on: this.props.initialOn}
   state = this.initialState
   internalSetState(changes, callback) {
-    this.setState(state => {
+    this.setState((state) => {
       // handle function setState call
       const changesObject =
         typeof changes === 'function' ? changes(state) : changes
@@ -26,27 +26,36 @@ class Toggle extends React.Component {
       // property and return an object only of the state changes
       // 💰 to remove the `type`, you can destructure the changes:
       // `{type, ...c}`
-      return Object.keys(reducedChanges).length
-        ? reducedChanges
-        : null
+
+      const {action: _ignoredAction, ...c} = reducedChanges
+      return Object.keys(c).length ? c : null
     }, callback)
   }
-  reset = () =>
+  reset = () => {
     // 🐨 add a `type` string property to this call
-    this.internalSetState(this.initialState, () =>
-      this.props.onReset(this.state.on),
+    // const resetState = {
+    //   ...this.initialState,
+    //   action: {
+    //     type: 'default',
+    //   },
+    // }
+
+    this.internalSetState(
+      {...this.initialState, action: {type: 'default'}},
+      () => this.props.onReset(this.state.on),
     )
+  }
   // 🐨 accept a `type` property here and give it a default value
-  toggle = () =>
+  toggle = (action = {type: 'default'}) =>
     this.internalSetState(
       // pass the `type` string to this object
-      ({on}) => ({on: !on}),
+      ({on}) => ({on: !on, action}),
       () => this.props.onToggle(this.state.on),
     )
   getTogglerProps = ({onClick, ...props} = {}) => ({
     // 🐨 change `this.toggle` to `() => this.toggle()`
     // to avoid passing the click event to this.toggle.
-    onClick: callAll(onClick, this.toggle),
+    onClick: callAll(onClick, () => this.toggle()),
     'aria-expanded': this.state.on,
     ...props,
   })
@@ -84,7 +93,7 @@ class Usage extends React.Component {
     this.props.onReset(...args)
   }
   toggleStateReducer = (state, changes) => {
-    if (changes.type === 'forced') {
+    if (changes.action.type === 'forced') {
       return changes
     }
     if (this.state.timesClicked >= 4) {
