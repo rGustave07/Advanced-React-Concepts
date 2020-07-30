@@ -13,6 +13,8 @@ class Toggle extends React.Component {
     // Now that a user can use this component effectively without
     // an `onToggle` prop (they can use `onStateChange` instead)
     // 🐨 let's provide a default for `onToggle` and `onStateChange`
+    onToggle: () => {},
+    onStateChange: () => {},
     stateReducer: (state, changes) => changes,
   }
   static stateChangeTypes = {
@@ -24,6 +26,9 @@ class Toggle extends React.Component {
   // 🐨 let's add an `isControlled` method that accepts a state key
   // (string) and returns true if the prop is controlled
   // 💰 this.props[prop] !== undefined
+  isControlled(stateKey) {
+    return this.props[stateKey] !== undefined;
+  }
   //
   // 🐨 We'll also need a `getState` method here that returns a
   // state object that has state from both internal state (`this.state`)
